@@ -1,17 +1,10 @@
 <template>
   <div class="App">
-    <!-- <TopList></TopList> -->
-    <PokemonDetail></PokemonDetail>
+    <router-link to="/">TopList</router-link>
+    <router-link to="/pokemon/1">PokemonDetail</router-link>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-// import TopList from "@/components/TopList.vue";
-import PokemonDetail from "@/components/PokemonDetail.vue";
-export default {
-  components:{
-    // TopList,
-    PokemonDetail,
-  },
-}
 </script>
