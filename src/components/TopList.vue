@@ -7,13 +7,14 @@
             <!-- offsetを増やして新しいポケモンデータを読み込む -->
             <button @click="loadMore">Load More</button>
         </div>
-        <div class="list-main">
-            <h1>一覧結果の表示場所</h1>
-            <div v-for="pokemon in pokemons" :key="pokemon.id">
+        <h1>一覧結果の表示場所</h1>
+        <div class="pokemon-container">
+            <div v-for="pokemon in pokemons" :key="pokemon.id" class="pokemon-card" @click="goToPokemonDetail(pokemon.pokemonId)">
+                <img :src="pokemon.image" alt="Pokemon Image" />
                 <p>{{ pokemon.name }}</p>
-                <p>Type: {{ pokemon.types }}</p>
-                <p>Pokedex ID: {{ getPokemonId(pokemon.url) }}</p>
-                <hr>
+                <!-- types と pokemonId を非表示にして値を保持 -->
+                <p class="hidden">{{ pokemon.types }}</p>
+                <p class="hidden">{{ pokemon.pokemonId }}</p>
             </div>
         </div>
     </div>
@@ -30,7 +31,9 @@ export default {
             // APIの取得位置
             offset: 0,
             // 1ページの表示数
-            limit: 20,
+            limit: 24,
+            // 画像表示
+            pokemonImage: [],
         };
     },
     // コンポーネントがマウントされた瞬間に実行するメソッド
@@ -44,9 +47,13 @@ export default {
                 const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${this.offset}&limit=${this.limit}`);
                 this.pokemons = response.data.results;
 
-                //ポケモンごとに非同期でタイプを取得
+                //ポケモンごとに非同期で取得
                 for(const pokemon of this.pokemons) {
                     pokemon.types = await this.getPokemonTypes(pokemon.url);
+                    const detailResponse = await axios.get(pokemon.url);
+                    // 画像情報はspritesオブジェクトの中にあります
+                    pokemon.image = detailResponse.data.sprites.front_default;
+                    pokemon.pokemonId = await this.getPokemonId(pokemon.url);
                 }
             }catch (error) {
                 console.log(`Error fetching Pokemon data`, error);
@@ -74,6 +81,10 @@ export default {
             this.offset += this.limit;
             this.loadPokemons();
         },
+        goToPokemonDetail(pokemonId) {
+            // PokemonDetailページに遷移
+            this.$router.push({ name: 'PokemonDetail', params: {id: pokemonId}});
+        }
     },
 };
 </script>
@@ -96,10 +107,26 @@ button {
     cursor: pointer;
 }
 
-.list-main {
-    text-align: center;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.pokemon-container {
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: space-between;
 }
+.pokemon-card {
+    width: calc(16.666% - 10px); /*一列に6つ並べるための幅*/
+    margin-bottom: 20px;
+    text-align: center;
+    transition: background-color 0.3s ease; /* 色が変わるアニメーションを追加 */
+}
+.pokemon-card:hover {
+    background-color: #f0f0f0; /* マウスホバー時の背景色 */
+  }
+.pokemon-card img {
+    max-width: 100%;
+    height: auto;
+}
+/* 追加: types と pokemonId を非表示にするスタイル */
+  .pokemon-card p.hidden {
+    display: none;
+  }
 </style>

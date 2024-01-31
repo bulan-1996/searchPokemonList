@@ -56,7 +56,8 @@ export default {
     },
     async created() {
         // ポケモンの詳細データを取得
-        const pokemonId = 1; //ポケモンのIDを現在は指定して仮取得を行う
+        // $route.params.idを用いてidを取得する。
+        const pokemonId = this.$route.params.id;
         await this.loadPokemonData(pokemonId);
     },
     methods: {
