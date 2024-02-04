@@ -15,6 +15,14 @@
                 <!-- types と pokemonId を非表示にして値を保持 -->
                 <p class="hidden">{{ pokemon.types }}</p>
                 <p class="hidden">{{ pokemon.pokemonId }}</p>
+            </div>s
+        </div>
+        <div class="pagination-container">
+            <div class="half-page" @click="goToPreviousPage">
+                <FontAwesomeIcon icon="arrow-left" class="arrow-icon"/>
+            </div>
+            <div class="half-page" @click="goToNextPage">
+                 <FontAwesomeIcon icon="arrow-right" class="arrow-icon"/>
             </div>
         </div>
     </div>
@@ -22,7 +30,6 @@
 
 <script>
 import axios from 'axios';
-
 export default {
     data() {
         return {
@@ -77,8 +84,13 @@ export default {
             return id;
         },
         // 次のポケモンデータの読み込み
-        loadMore() {
+        goToNextPage() {
             this.offset += this.limit;
+            this.loadPokemons();
+        },
+        // 前のポケモンデータの読み込み
+        goToPreviousPage() {
+            this.offset -= this.limit;
             this.loadPokemons();
         },
         goToPokemonDetail(pokemonId) {
@@ -128,5 +140,22 @@ button {
 /* 追加: types と pokemonId を非表示にするスタイル */
   .pokemon-card p.hidden {
     display: none;
+  }
+ .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    width: 50%; /* 親コンテナの半分の幅を使用 */
+    margin: 0 auto; /* 中央揃え */
+  }
+ .half-page {
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* 背景色が変わるアニメーションを追加 */
+ }
+  .arrow-icon {
+    font-size: 24px; /* アイコンの大きさを調整 */
+  }
+
+  .half-page:hover {
+    background-color: #f0f0f0; /* マウスホバー時の背景色 */
   }
 </style>
