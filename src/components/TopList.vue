@@ -1,26 +1,26 @@
 <template>
     <div>
         <div class="list-header">
-            <h1>検索</h1>
-            <input type="text" placeholder="Enter Pokémon name or ID">
-            <button>Search</button>
-            <!-- offsetを増やして新しいポケモンデータを読み込む -->
-            <button @click="loadMore">Load More</button>
+            <!-- 画面のテキストから検索して、その結果を画面に表示 -->
+            <input v-model="searchQuery" type="text" placeholder="Enter Pokémon name or ID">
+            <button @click="searchPokemon">Search</button>
         </div>
-        <h1>一覧結果の表示場所</h1>
         <div class="pokemon-container">
-            <div v-for="pokemon in pokemons" :key="pokemon.id" class="pokemon-card" @click="goToPokemonDetail(pokemon.pokemonId)">
+            <!-- 画面の一覧にポケモン一覧を表示する -->
+            <div v-for="pokemon in filteredPokemons" :key="pokemon.id" class="pokemon-card" @click="goToPokemonDetail(pokemon.pokemonId)">
                 <img :src="pokemon.image" alt="Pokemon Image" />
                 <p>{{ pokemon.name }}</p>
                 <!-- types と pokemonId を非表示にして値を保持 -->
                 <p class="hidden">{{ pokemon.types }}</p>
                 <p class="hidden">{{ pokemon.pokemonId }}</p>
-            </div>s
+            </div>
         </div>
         <div class="pagination-container">
+            <!-- 前へボタンを押下した際に前の24件を表示する。 -->
             <div class="half-page" @click="goToPreviousPage">
                 <FontAwesomeIcon icon="arrow-left" class="arrow-icon"/>
             </div>
+            <!-- 次へボタンを押下した際に次の24件を表示する。 -->
             <div class="half-page" @click="goToNextPage">
                  <FontAwesomeIcon icon="arrow-right" class="arrow-icon"/>
             </div>
@@ -35,6 +35,10 @@ export default {
         return {
             // pokemons情報
             pokemons: [],
+            // フィルタリングされたポケモン情報
+            filteredPokemons: [],
+            // 検索クエリ
+            searchQuery: "",
             // APIの取得位置
             offset: 0,
             // 1ページの表示数
@@ -54,8 +58,12 @@ export default {
                 const response = await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${this.offset}&limit=${this.limit}`);
                 this.pokemons = response.data.results;
 
+                // フィルタリングされたポケモンデータも更新
+                this.filteredPokemons = this.pokemons;
+
                 //ポケモンごとに非同期で取得
                 for(const pokemon of this.pokemons) {
+                    // タイプの取得
                     pokemon.types = await this.getPokemonTypes(pokemon.url);
                     const detailResponse = await axios.get(pokemon.url);
                     // 画像情報はspritesオブジェクトの中にあります
@@ -92,6 +100,14 @@ export default {
         goToPreviousPage() {
             this.offset -= this.limit;
             this.loadPokemons();
+        },
+        // 検索クエリに基づいてポケモンを検索
+        searchPokemon() {
+            // フィルタリングされたポケモン情報を更新
+            this.filteredPokemons = this.pokemons.filter(pokemon =>
+                pokemon.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                pokemon.pokemonId.toString().includes(this.searchQuery)
+            );
         },
         goToPokemonDetail(pokemonId) {
             // PokemonDetailページに遷移
